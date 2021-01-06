@@ -1,0 +1,259 @@
+---
+openapi: 3.0.2
+info:
+  title: meli-project
+  version: 0.0.1
+  description: API Description
+paths:
+  /v1/contextual-information/trace:
+    description: ""
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/trace_request'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/trace_response'
+          description: Successful GET Operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/trace_response'
+              examples:
+                NOT_FOUND:
+                  value:
+                    data: []
+                    errors:
+                    - code: "404"
+                      detail: NOT_FOUND
+                    meta:
+                      operation: /v1/contextual-information/trace
+                      method: POST
+          description: Data not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/trace_response'
+              examples:
+                INTERNAL_SERVER_ERROR:
+                  value:
+                    data: []
+                    errors:
+                    - code: "500"
+                      detail: SERVER_ERROR
+                    meta:
+                      operation: /v1/contextual-information/trace
+                      method: POST
+          description: Internal Server Error
+      summary: Get Trace
+      description: Allows to obtain context information from an IP adress.
+  /v1/icontextual-information/stats:
+    description: ""
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/stats_response'
+          description: Successful GET Operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/trace_response'
+              examples:
+                NotFound:
+                  value:
+                    data: []
+                    errors:
+                    - code: "404"
+                      detail: NOT_FOUND
+                    meta:
+                      operation: /v1/contextual-information/stats
+                      method: GET
+          description: Data not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/trace_response'
+              examples:
+                ServerError:
+                  value:
+                    data: []
+                    errors:
+                    - code: "500"
+                      detail: SERVER_ERROR
+                    meta:
+                      operation: /v1/contextual-information/stats
+                      method: GET
+          description: Internal Server error
+      summary: Get Stats
+      description: It allows to consult service usage statistics.
+components:
+  schemas:
+    error:
+      description: Error list
+      required:
+      - code
+      - detail
+      type: object
+      properties:
+        code:
+          description: Id del error
+          type: string
+        detail:
+          description: Descripción del error
+          type: string
+      example:
+        code: MISSING_PARAMETER
+        detail: "The parameter {0} is required"
+    meta:
+      description: Request metadata
+      required:
+      - method
+      - operation
+      type: object
+      properties:
+        method:
+          description: ""
+          type: string
+        operation:
+          description: ""
+          type: string
+      example: "\"meta\": {\r\n    \"method\": \"GET\",\r\n    \"operation\": \"/v1/pom/cards/movements\"\
+        ,\r\n    \"paging\": null\r\n}"
+    trace_response:
+      description: ""
+      required:
+      - data
+      - errors
+      - meta
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/trace_data'
+          description: ""
+        errors:
+          description: ""
+          type: array
+          items:
+            $ref: '#/components/schemas/error'
+        meta:
+          $ref: '#/components/schemas/meta'
+          description: ""
+      example:
+        data:
+          ip: 83.44.196.93
+          date: 21/11/2020 15:12:03
+          country: España (spain)
+          iso_code: es
+          languages:
+          - Español (es)
+          currency: EUR (1 EUR = 1.0631 U$S)
+          times:
+          - 20:01:23 (UTC)
+          - 19:01:23 (UTC-01)
+          estimated_distance: 10270 kms
+        errors: []
+        meta:
+          method: POST
+          operation: /v1/contextual-information/trace
+    trace_data:
+      title: Root Type for data
+      description: ""
+      type: object
+      properties:
+        ip:
+          type: string
+        date:
+          type: string
+        country:
+          type: string
+        iso_code:
+          type: string
+        languages:
+          type: array
+          items:
+            type: string
+        currency:
+          type: string
+        times:
+          type: array
+          items:
+            type: string
+        estimated_distance:
+          type: string
+      example:
+        ip: 83.44.196.93
+        date: 21/11/2020 15:12:03
+        country: España (spain)
+        iso_code: es
+        languages:
+        - Español (es)
+        currency: EUR (1 EUR = 1.0631 U$S)
+        times:
+        - 20:01:23 (UTC)
+        - 19:01:23 (UTC-01)
+        estimated_distance: 10270 kms
+    trace_request:
+      title: Root Type for ip_adress
+      description: ""
+      type: object
+      properties:
+        ip:
+          type: string
+      example:
+        ip: 123.123.123.132
+    stats_data:
+      title: Root Type for stats_data
+      description: ""
+      type: object
+      properties:
+        closest_distance:
+          type: string
+        farthest_distance:
+          type: string
+        average_distance:
+          type: string
+      example:
+        closest_distance: 100 kms
+        farthest_distance: 600 kms
+        average_distance: 300 kms
+    stats_response:
+      description: ""
+      required:
+      - data
+      - errors
+      - meta
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/stats_data'
+          description: ""
+        errors:
+          description: ""
+          type: array
+          items:
+            $ref: '#/components/schemas/error'
+        meta:
+          $ref: '#/components/schemas/meta'
+          description: ""
+      example:
+        data:
+          closest_distance: 100 kms
+          farthest_distance: 600 kms
+          average_distance: 300 kms
+        errors: []
+        meta:
+          method: GET
+          operation: /v1/contextual-information/stats
