@@ -68,7 +68,6 @@ public class FixerServiceImpl implements IFixerService {
         if (!response.getBody().isSuccess()) {
             logger.info("MELI-PROJECT : No se ha podido obtener el valor actual del euro. ");
         }
-
         setFixerResponse(response.getBody());
     }
 

@@ -26,7 +26,7 @@ public class CountryInformationMapper {
         traceData.setIsoCode(countryInformation.getLanguages().get(0).getIsoCode());
         traceData.setLanguages(new ArrayList<>());
         countryInformation.getLanguages().forEach(language ->
-            traceData.getLanguages().add(language.getName().concat(" (" + language.getIsoCode() + ")")));
+                traceData.getLanguages().add(language.getName().concat(" (" + language.getIsoCode() + ")")));
         traceData.setTimes(countryInformation.getTimezones());
         traceData.setCurrency(countryInformation.getCurrencies().get(0).getCode());
         traceData.setEstimatedDistance(calculateDistance(countryInformation.getLatLng().get(0), countryInformation.getLatLng().get(1)));

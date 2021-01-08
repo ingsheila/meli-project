@@ -11,6 +11,7 @@ public class ConstantValues {
     public static final String NOT_FOUND = "404";
 
     public static final String EMPTY_STRING = "";
+    public static final String KMS_STRING = " kms";
 
     private ConstantValues() {
         throw new IllegalStateException("Utility class");

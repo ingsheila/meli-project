@@ -20,7 +20,6 @@ public interface IContextualInformationService {
      * Permite obtener informacion estadistica sobre las distancias en relacion a BA de las invocaciones realizadas.
      *
      * @return StatsResponse: Distancia mas cercana, mas lejana y el promedio general
-     * @throws ContextualInformationException
      */
     StatsResponse getStatsInformation() throws ContextualInformationException;
 }

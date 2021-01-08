@@ -220,14 +220,18 @@ components:
       type: object
       properties:
         closest_distance:
-          type: string
+          $ref: '#/components/schemas/distance_details'
         farthest_distance:
-          type: string
+          $ref: '#/components/schemas/distance_details'
         average_distance:
           type: string
       example:
-        closest_distance: 100 kms
-        farthest_distance: 600 kms
+        closest_distance:
+          distance: 10000 kms
+          country: Chile
+        farthest_distance:
+          distance: 10000 kms
+          country: Chile
         average_distance: 300 kms
     stats_response:
       description: ""
@@ -250,10 +254,26 @@ components:
           description: ""
       example:
         data:
-          closest_distance: 100 kms
-          farthest_distance: 600 kms
+          closest_distance:
+            distance: 10000 kms
+            country: Chile
+          farthest_distance:
+            distance: 10000 kms
+            country: Chile
           average_distance: 300 kms
         errors: []
         meta:
           method: GET
           operation: /v1/contextual-information/stats
+    distance_details:
+      title: Root Type for closest_distance
+      description: ""
+      type: object
+      properties:
+        distance:
+          type: string
+        country:
+          type: string
+      example:
+        distance: 10000 kms
+        country: Chile

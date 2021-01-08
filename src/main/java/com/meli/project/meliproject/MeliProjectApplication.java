@@ -8,8 +8,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 public class MeliProjectApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(MeliProjectApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(MeliProjectApplication.class, args);
+    }
 
 }
