@@ -7,5 +7,5 @@ public interface IFixerService {
      *
      * @return
      */
-    Long getRate(String currency);
+    Double getRate(String currency);
 }

@@ -1,23 +1,24 @@
 package com.meli.project.meliproject.service.impl;
 
 import com.meli.project.meliproject.configuration.ConfigProperties;
-import com.meli.project.meliproject.configuration.RestTemplateResponseErrorHandler;
 import com.meli.project.meliproject.constants.ConstantValues;
 import com.meli.project.meliproject.model.FixerResponse;
 import com.meli.project.meliproject.service.IFixerService;
+import com.meli.project.meliproject.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.PostConstruct;
-import java.util.Arrays;
+import java.util.HashMap;
 
 @Service("fixerService")
 public class FixerServiceImpl implements IFixerService {
@@ -30,6 +31,7 @@ public class FixerServiceImpl implements IFixerService {
         getFixerInformation();
     }
 
+    @Autowired
     private RestTemplate restTemplate;
 
     @Autowired
@@ -37,23 +39,11 @@ public class FixerServiceImpl implements IFixerService {
 
     private FixerResponse fixerResponse;
 
-    @Autowired
-    public FixerServiceImpl(RestTemplateBuilder restTemplateBuilder) {
-        this.restTemplate = restTemplateBuilder
-                .errorHandler(new RestTemplateResponseErrorHandler())
-                .build();
-    }
-
     @Scheduled(cron = "0 */60 * * * *")
     private void getFixerInformation() {
 
         logger.info("MELI-PROJECT : Obteniendo el valor actual del euro. ");
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.set(ConstantValues.KeyProperty.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-
-        HttpEntity<Object> httpEntity = new HttpEntity<>(headers);
+        HttpEntity<Object> httpEntity = new HttpEntity<>(Utils.getHttpHeadersConfiguration());
         UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder
                 .fromHttpUrl(configProperties.getDataFixer())
                 .queryParam(ConstantValues.KeyProperty.ACCESS_KEY, configProperties.getApiKey())
@@ -67,13 +57,16 @@ public class FixerServiceImpl implements IFixerService {
 
         if (!response.getBody().isSuccess()) {
             logger.info("MELI-PROJECT : No se ha podido obtener el valor actual del euro. ");
+            FixerResponse fixerResponseDefault = new FixerResponse();
+            fixerResponseDefault.setRates(new HashMap<>());
+            setFixerResponse(fixerResponseDefault);
         }
         setFixerResponse(response.getBody());
     }
 
     @Cacheable("rates")
     @Override
-    public Long getRate(String currency) {
+    public Double getRate(String currency) {
         return getFixerResponse().getRates().get(currency);
     }
 

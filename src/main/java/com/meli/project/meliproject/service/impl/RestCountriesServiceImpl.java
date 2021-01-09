@@ -2,24 +2,23 @@ package com.meli.project.meliproject.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meli.project.meliproject.configuration.ConfigProperties;
-import com.meli.project.meliproject.configuration.RestTemplateResponseErrorHandler;
-import com.meli.project.meliproject.constants.ConstantValues;
 import com.meli.project.meliproject.exception.RestCountriesServiceException;
 import com.meli.project.meliproject.model.CountryInformation;
 import com.meli.project.meliproject.service.IRestCountriesService;
+import com.meli.project.meliproject.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.*;
 
 @Service("restCountriesService")
 public class RestCountriesServiceImpl implements IRestCountriesService {
@@ -31,28 +30,19 @@ public class RestCountriesServiceImpl implements IRestCountriesService {
         this.logger = LoggerFactory.getLogger(this.getClass());
     }
 
+    @Autowired
     private RestTemplate restTemplate;
 
     @Autowired
     private ConfigProperties configProperties;
 
-    @Autowired
-    public RestCountriesServiceImpl(RestTemplateBuilder restTemplateBuilder) {
-        this.restTemplate = restTemplateBuilder
-                .errorHandler(new RestTemplateResponseErrorHandler())
-                .build();
-    }
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public CountryInformation getCountryInformationByName(String countryName) throws RestCountriesServiceException {
+    public CountryInformation getCountryInformationByName(String countryName, String countryCode) throws RestCountriesServiceException {
 
         logger.info("MELI-PROJECT : Consultando el servicio de REST Countries. ");
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.set(ConstantValues.KeyProperty.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-
-        HttpEntity<Object> httpEntity = new HttpEntity<>(headers);
+        HttpEntity<Object> httpEntity = new HttpEntity<>(Utils.getHttpHeadersConfiguration());
         UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder
                 .fromHttpUrl(configProperties.getRestCountries().concat(countryName));
 
@@ -69,12 +59,25 @@ public class RestCountriesServiceImpl implements IRestCountriesService {
                             + " correspondiente a la IP consultada. "), response.getStatusCode());
         }
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.convertValue(((ArrayList) response.getBody()).get(0), CountryInformation.class);
+        List<Object> objectList = (ArrayList) response.getBody();
+        if (objectList.size() > 1) {
+            return getCountryInformation(objectList, countryCode);
+        } else {
+            return this.objectMapper.convertValue(objectList.get(0), CountryInformation.class);
+        }
     }
 
     private boolean validateResponse(ResponseEntity<Object> response) {
-
         return response.getBody() instanceof HashMap;
+    }
+
+    private CountryInformation getCountryInformation(List<Object> objectList, String countryCode) {
+
+        List<CountryInformation> countryInformationList = new ArrayList<>();
+        objectList.forEach(object -> countryInformationList.add(this.objectMapper.convertValue(object, CountryInformation.class)));
+
+        Optional<CountryInformation> optionalCountryInformation = countryInformationList.stream().filter(countryInformation
+                -> countryInformation.getAlpha3Code().equalsIgnoreCase(countryCode)).findFirst();
+        return optionalCountryInformation.isPresent() ? optionalCountryInformation.get() : new CountryInformation();
     }
 }

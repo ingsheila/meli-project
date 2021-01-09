@@ -1,16 +1,18 @@
 package com.meli.project.meliproject.service.impl;
 
 import com.meli.project.meliproject.configuration.ConfigProperties;
-import com.meli.project.meliproject.configuration.RestTemplateResponseErrorHandler;
 import com.meli.project.meliproject.constants.ConstantValues;
 import com.meli.project.meliproject.exception.CountryServiceException;
 import com.meli.project.meliproject.model.CountryData;
 import com.meli.project.meliproject.service.IIPCountryService;
+import com.meli.project.meliproject.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -28,28 +30,17 @@ public class IPCountryServiceImpl implements IIPCountryService {
         this.logger = LoggerFactory.getLogger(this.getClass());
     }
 
+    @Autowired
     private RestTemplate restTemplate;
 
     @Autowired
     private ConfigProperties configProperties;
 
-    @Autowired
-    public IPCountryServiceImpl(RestTemplateBuilder restTemplateBuilder) {
-        this.restTemplate = restTemplateBuilder
-                .errorHandler(new RestTemplateResponseErrorHandler())
-                .build();
-    }
-
     @Override
     public CountryData getCountryDataByIP(String ipAddress) throws CountryServiceException {
 
         logger.info("MELI-PROJECT : Consultando el servicio de IP2Country. ");
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.set(ConstantValues.KeyProperty.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-
-        HttpEntity<Object> httpEntity = new HttpEntity<>(headers);
+        HttpEntity<Object> httpEntity = new HttpEntity<>(Utils.getHttpHeadersConfiguration());
         UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromHttpUrl(configProperties.getIpCountry().concat(ipAddress));
 
         ResponseEntity<CountryData> response = restTemplate.exchange(

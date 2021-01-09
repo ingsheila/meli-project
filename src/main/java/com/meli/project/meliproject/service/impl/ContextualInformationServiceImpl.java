@@ -6,6 +6,7 @@ import com.meli.project.meliproject.exception.ContextualInformationException;
 import com.meli.project.meliproject.exception.CountryServiceException;
 import com.meli.project.meliproject.exception.RestCountriesServiceException;
 import com.meli.project.meliproject.mapper.CountryInformationMapper;
+import com.meli.project.meliproject.model.CountryData;
 import com.meli.project.meliproject.model.Execution;
 import com.meli.project.meliproject.service.*;
 import org.slf4j.Logger;
@@ -59,17 +60,17 @@ public class ContextualInformationServiceImpl implements IContextualInformationS
 
         try {
             logger.info("MELI-PROJECT : Obteniendo el nombre del pais a partir de una IP. ");
-            traceResponse.setData(mapper.convertToTraceData(request.getIp(), this.iPCountryService.getCountryDataByIP(request.getIp())));
+            CountryData countryData = this.iPCountryService.getCountryDataByIP(request.getIp());
+            traceResponse.setData(mapper.convertToTraceData(request.getIp(), countryData));
+
+            logger.info("MELI-PROJECT : Obteniendo informacion del pais a partir del nombre. ");
+            mapper.convertToTraceData(traceResponse.getData(),
+                    this.restCountriesService.getCountryInformationByName(traceResponse.getData().getCountry(), countryData.getCountryCode3()));
+            traceResponse.getData().setCurrency(getEuroRate(traceResponse.getData().getCurrency()));
+
         } catch (CountryServiceException exception) {
             throw new ContextualInformationException(ConstantValues.NOT_FOUND, exception.getMessages(),
                     HttpStatus.NOT_FOUND);
-        }
-
-        try {
-            logger.info("MELI-PROJECT : Obteniendo informacion del pais a partir del nombre. ");
-            mapper.convertToTraceDate(traceResponse.getData(),
-                    this.restCountriesService.getCountryInformationByName(traceResponse.getData().getCountry()));
-            traceResponse.getData().setCurrency(getEuroRate(traceResponse.getData().getCurrency()));
         } catch (RestCountriesServiceException exception) {
             throw new ContextualInformationException(ConstantValues.NOT_FOUND, exception.getMessages(),
                     HttpStatus.NOT_FOUND);
@@ -151,7 +152,7 @@ public class ContextualInformationServiceImpl implements IContextualInformationS
 
     private String getEuroRate(String currency) {
 
-        Long rate = this.fixerService.getRate(currency);
+        Double rate = this.fixerService.getRate(currency);
         return rate != null ? currency + " (1 EUR = " + rate + " " + currency + ")" : currency;
     }
 

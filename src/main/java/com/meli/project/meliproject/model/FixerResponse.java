@@ -19,7 +19,7 @@ public class FixerResponse {
     private String date;
 
     @JsonProperty(value = "rates")
-    private Map<String, Long> rates = new HashMap<>();
+    private Map<String, Double> rates = new HashMap<>();
 
     public boolean isSuccess() {
         return success;
@@ -45,11 +45,11 @@ public class FixerResponse {
         this.date = date;
     }
 
-    public Map<String, Long> getRates() {
+    public Map<String, Double> getRates() {
         return rates;
     }
 
-    public void setRates(Map<String, Long> rates) {
+    public void setRates(Map<String, Double> rates) {
         this.rates = rates;
     }
 }

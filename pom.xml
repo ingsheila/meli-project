@@ -20,6 +20,13 @@
 		<maven-compiler-plugin.target>8</maven-compiler-plugin.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+		<sonar.exclusions>
+			**/config/**/*,
+			**/constants/**/*,
+			**/exception/**/*,
+			**/model/**/*,
+			**/Application.java,
+		</sonar.exclusions>
 	</properties>
 
 	<repositories>

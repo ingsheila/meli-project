@@ -21,15 +21,21 @@ public class CountryInformationMapper {
         return traceData;
     }
 
-    public void convertToTraceDate(TraceData traceData, CountryInformation countryInformation) {
+    public void convertToTraceData(TraceData traceData, CountryInformation countryInformation) {
 
-        traceData.setIsoCode(countryInformation.getLanguages().get(0).getIsoCode());
-        traceData.setLanguages(new ArrayList<>());
-        countryInformation.getLanguages().forEach(language ->
-                traceData.getLanguages().add(language.getName().concat(" (" + language.getIsoCode() + ")")));
+        if (!countryInformation.getLanguages().isEmpty()) {
+            traceData.setIsoCode(countryInformation.getLanguages().get(0).getIsoCode());
+            traceData.setLanguages(new ArrayList<>());
+            countryInformation.getLanguages().forEach(language ->
+                    traceData.getLanguages().add(language.getName().concat(" (" + language.getIsoCode() + ")")));
+        }
         traceData.setTimes(countryInformation.getTimezones());
-        traceData.setCurrency(countryInformation.getCurrencies().get(0).getCode());
-        traceData.setEstimatedDistance(calculateDistance(countryInformation.getLatLng().get(0), countryInformation.getLatLng().get(1)));
+        if (!countryInformation.getCurrencies().isEmpty()) {
+            traceData.setCurrency(countryInformation.getCurrencies().get(0).getCode());
+        }
+        if (!countryInformation.getLatLng().isEmpty()) {
+            traceData.setEstimatedDistance(calculateDistance(countryInformation.getLatLng().get(0), countryInformation.getLatLng().get(1)));
+        }
     }
 
     private String calculateDistance(double lat1, double lng1) {
