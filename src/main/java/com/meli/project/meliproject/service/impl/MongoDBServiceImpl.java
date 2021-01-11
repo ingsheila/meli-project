@@ -70,8 +70,9 @@ public class MongoDBServiceImpl implements IMongoDBService {
     @Override
     public Execution getAverageExecutions() {
 
-        return getExecutionsCollection().aggregate(
+        Execution execution = getExecutionsCollection().aggregate(
                 Arrays.asList(group(null, Accumulators.avg(TOTAL_FIELD, "$total")))).first();
+        return execution != null ? execution : generateDefaultExecution();
     }
 
     @Override
@@ -94,8 +95,13 @@ public class MongoDBServiceImpl implements IMongoDBService {
         Execution execution = getExecutionsCollection().aggregate(
                 Arrays.asList(group(null, Accumulators.min(DISTANCE_FIELD, "$distance")))).first();
 
-        return getExecutionsCollection().aggregate(Arrays.asList(project,
+        if (execution == null) {
+            return generateDefaultExecution();
+        }
+        Execution finalExecution = getExecutionsCollection().aggregate(Arrays.asList(project,
                 match(Filters.eq(DISTANCE_FIELD, execution.getDistance())))).first();
+
+        return finalExecution != null ? finalExecution : generateDefaultExecution();
     }
 
     @Override
@@ -106,12 +112,25 @@ public class MongoDBServiceImpl implements IMongoDBService {
         Execution execution = getExecutionsCollection().aggregate(
                 Arrays.asList(group(null, Accumulators.max(DISTANCE_FIELD, "$distance")))).first();
 
-        return getExecutionsCollection().aggregate(Arrays.asList(project,
+        if (execution == null) {
+            return generateDefaultExecution();
+        }
+        Execution finalExecution = getExecutionsCollection().aggregate(Arrays.asList(project,
                 match(Filters.eq(DISTANCE_FIELD, execution.getDistance())))).first();
+        return finalExecution != null ? finalExecution : generateDefaultExecution();
     }
 
     private MongoCollection<Execution> getExecutionsCollection() {
         return this.mongoClient.getDatabase("stats").getCollection(EXECUTIONS_COLLECTION_NAME, Execution.class);
     }
 
+    private Execution generateDefaultExecution() {
+
+        Execution execution = new Execution();
+        execution.setCountry("");
+        execution.setDistance(0.0);
+        execution.setInvocations(0);
+        execution.setTotal(0.0);
+        return execution;
+    }
 }

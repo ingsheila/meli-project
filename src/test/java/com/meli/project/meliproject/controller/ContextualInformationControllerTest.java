@@ -5,6 +5,7 @@ import com.meli.project.meliproject.AbstractIntegrationTest;
 import com.meli.project.meliproject.constants.ConstantValues;
 import com.meli.project.meliproject.exception.ContextualInformationException;
 import com.meli.project.meliproject.service.IContextualInformationService;
+import com.meli.project.meliproject.service.IFixerService;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -27,6 +28,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
 public class ContextualInformationControllerTest extends AbstractIntegrationTest {
+
+    @MockBean
+    private IFixerService fixerService;
 
     @MockBean
     private IContextualInformationService contextualInformationService;

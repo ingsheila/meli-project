@@ -55,7 +55,7 @@ public class FixerServiceImpl implements IFixerService {
                 httpEntity,
                 FixerResponse.class);
 
-        if (!response.getBody().isSuccess()) {
+        if (response == null || response.getBody() == null || !response.getBody().isSuccess()) {
             logger.info("MELI-PROJECT : No se ha podido obtener el valor actual del euro. ");
             FixerResponse fixerResponseDefault = new FixerResponse();
             fixerResponseDefault.setRates(new HashMap<>());

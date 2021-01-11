@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -143,8 +142,13 @@ public class ContextualInformationServiceImpl implements IContextualInformationS
     private void validateRequest(TraceRequest request) throws ContextualInformationException {
 
         Pattern pattern = Pattern.compile("^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
-        Matcher matcher = pattern.matcher(request.getIp());
-        if (!matcher.matches()) {
+
+        if (request.getIp() == null){
+            throw new ContextualInformationException(ConstantValues.BAD_REQUEST_CODE,
+                    Arrays.asList("El valor del campo IP es obligatorio."), HttpStatus.BAD_REQUEST);
+        }
+
+        if (!pattern.matcher(request.getIp()).matches()) {
             throw new ContextualInformationException(ConstantValues.BAD_REQUEST_CODE,
                     Arrays.asList("El valor del campo IP no es valido."), HttpStatus.BAD_REQUEST);
         }

@@ -1,15 +1,13 @@
 package com.meli.project.meliproject.service;
 
+import com.meli.project.api.model.StatsResponse;
 import com.meli.project.api.model.TraceRequest;
 import com.meli.project.api.model.TraceResponse;
 import com.meli.project.meliproject.constants.ConstantValues;
 import com.meli.project.meliproject.exception.ContextualInformationException;
 import com.meli.project.meliproject.exception.CountryServiceException;
 import com.meli.project.meliproject.exception.RestCountriesServiceException;
-import com.meli.project.meliproject.model.CountryData;
-import com.meli.project.meliproject.model.CountryInformation;
-import com.meli.project.meliproject.model.Currency;
-import com.meli.project.meliproject.model.Language;
+import com.meli.project.meliproject.model.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -26,6 +24,7 @@ import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -85,9 +84,8 @@ public class ContextualInformationServiceTest {
     @Test(expected = ContextualInformationException.class)
     public void getCountryServiceException() throws ContextualInformationException, CountryServiceException {
 
-        Mockito.when(this.ipCountryService.getCountryDataByIP(anyString())).thenThrow(
-                new ContextualInformationException(ConstantValues.NOT_FOUND, Arrays.asList("NOT FOUND"),
-                        HttpStatus.NOT_FOUND));
+        given(this.ipCountryService.getCountryDataByIP(anyString())).willThrow(
+                new CountryServiceException(ConstantValues.NOT_FOUND, Arrays.asList("NOT FOUND"), HttpStatus.NOT_FOUND));
         this.contextualInformationService.getTraceInformation(generateTraceRequest(FRANCE_IP_ADDRESS));
     }
 
@@ -95,10 +93,45 @@ public class ContextualInformationServiceTest {
     public void getRestCountriesServiceException() throws ContextualInformationException, CountryServiceException, RestCountriesServiceException {
 
         Mockito.when(this.ipCountryService.getCountryDataByIP(anyString())).thenReturn(generateCountryDataResponse());
-        Mockito.when(this.restCountriesService.getCountryInformationByName(anyString(), anyString())).thenThrow(
-                new ContextualInformationException(ConstantValues.NOT_FOUND, Arrays.asList("NOT FOUND"),
-                        HttpStatus.NOT_FOUND));
+        given(this.restCountriesService.getCountryInformationByName(anyString(), anyString())).willThrow(
+                new RestCountriesServiceException(ConstantValues.NOT_FOUND, Arrays.asList("NOT FOUND"), HttpStatus.NOT_FOUND));
         this.contextualInformationService.getTraceInformation(generateTraceRequest(FRANCE_IP_ADDRESS));
+    }
+
+    @Test
+    public void getStatsInformation() throws ContextualInformationException {
+
+        Mockito.when(this.mongoDBService.getAverageExecutions()).thenReturn(
+                generateExecution("China", null, null, 18518.28));
+        Mockito.when(this.mongoDBService.getClosestDistance()).thenReturn(
+                generateExecution("Argentina", 521.93, 6, 3131.57));
+        Mockito.when(this.mongoDBService.getFarthestDistance()).thenReturn(generateExecution(
+                "Germany", 11578.14, 3, 34734.42));
+
+        StatsResponse statsResponse = this.contextualInformationService.getStatsInformation();
+        assertEquals("Argentina",statsResponse.getData().getClosestDistance().getCountry());
+        assertEquals("521.93 kms",statsResponse.getData().getClosestDistance().getDistance());
+        assertEquals("Germany",statsResponse.getData().getFarthestDistance().getCountry());
+        assertEquals("11578.14 kms",statsResponse.getData().getFarthestDistance().getDistance());
+        assertEquals("18518.28 kms",statsResponse.getData().getAverageDistance());
+    }
+
+    @Test
+    public void getEmptyStatsInformation() throws ContextualInformationException {
+
+        Mockito.when(this.mongoDBService.getAverageExecutions()).thenReturn(
+                generateExecution("", 0.0, 0, 0.0));
+        Mockito.when(this.mongoDBService.getClosestDistance()).thenReturn(
+                generateExecution("", 0.0, 0, 0.0));
+        Mockito.when(this.mongoDBService.getFarthestDistance()).thenReturn(
+                generateExecution("", 0.0, 0, 0.0));
+
+        StatsResponse statsResponse = this.contextualInformationService.getStatsInformation();
+        assertEquals("",statsResponse.getData().getClosestDistance().getCountry());
+        assertEquals("0.0 kms",statsResponse.getData().getClosestDistance().getDistance());
+        assertEquals("",statsResponse.getData().getFarthestDistance().getCountry());
+        assertEquals("0.0 kms",statsResponse.getData().getFarthestDistance().getDistance());
+        assertEquals("0.0 kms",statsResponse.getData().getAverageDistance());
     }
 
     private CountryData generateCountryDataResponse() {
@@ -146,5 +179,15 @@ public class ContextualInformationServiceTest {
         TraceRequest traceRequest = new TraceRequest();
         traceRequest.setIp(ipAddress);
         return traceRequest;
+    }
+
+    private Execution generateExecution(String country, Double distance, Integer invocations, Double total) {
+
+        Execution execution = new Execution();
+        execution.setCountry(country);
+        execution.setDistance(distance);
+        execution.setInvocations(invocations);
+        execution.setTotal(total);
+        return execution;
     }
 }
