@@ -29,7 +29,7 @@ public class ContextualInformationController {
     @Autowired
     private IContextualInformationService contextualInformationService;
 
-    @ApiOperation(value = "Obtener informacion contextual de una invocacion realizada.")
+    @ApiOperation(value = "Obtener informacion contextual de una invocacion realizada." , response = TraceResponse.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully retrieved message"),
             @ApiResponse(code = 400, message = "The server cannot or will not process the request due to an apparent client error."),
@@ -42,7 +42,7 @@ public class ContextualInformationController {
         return ResponseEntity.status(HttpStatus.OK).body(contextualInformationService.getTraceInformation(request));
     }
 
-    @ApiOperation(value = "Obtener informacion estadistica sobre las distancias en relacion a BA de las invocaciones realizadas.")
+    @ApiOperation(value = "Obtener informacion estadistica sobre las distancias en relacion a BA de las invocaciones realizadas.", response = StatsResponse.class, produces = "application/json")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully retrieved message"),
             @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
